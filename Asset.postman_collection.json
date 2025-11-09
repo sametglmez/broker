@@ -1,0 +1,40 @@
+{
+	"info": {
+		"_postman_id": "7086ce47-1162-458e-b613-ce8b85aab927",
+		"name": "Asset",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21619380"
+	},
+	"item": [
+		{
+			"name": "Get_Asset",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6eyJpZCI6MSwibmFtZSI6IkFETUlOIn0sInN1YiI6ImFkbWluU2FtZXQiLCJpYXQiOjE3NjI3MDU1MTQsImV4cCI6MTc2MjcwOTExNH0.G1chHm4cMXQcDemqGuLGkfD2tI6p_PwL0rzVM4IEQ1s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8081/broker/assets/101",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"broker",
+						"assets",
+						"101"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

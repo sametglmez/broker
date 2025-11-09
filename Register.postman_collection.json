@@ -1,0 +1,68 @@
+{
+	"info": {
+		"_postman_id": "310a0db8-b251-415f-a6a0-af01eca81e32",
+		"name": "Register",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21619380"
+	},
+	"item": [
+		{
+			"name": "Create_Customer_User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\" : \"samet\",\r\n    \"password\" : \"samet123\",\r\n    \"role\" : \"CUSTOMER\",\r\n    \"customerId\" : 101\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8081/broker/auth/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"broker",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_Admin_User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\" : \"adminSamet\",\r\n    \"password\" : \"admin123\",\r\n    \"role\" : \"ADMIN\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8081/broker/auth/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"broker",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
