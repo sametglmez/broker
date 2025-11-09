@@ -3,6 +3,7 @@ package com.example.broker.controller;
 import com.example.broker.model.LoginResponse;
 import com.example.broker.model.RegisterRequest;
 import com.example.broker.model.RegisterResponseModel;
+import com.example.broker.security.SensitiveData;
 import com.example.broker.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

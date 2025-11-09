@@ -47,11 +47,11 @@ public class RoleAccessAspect {
     }
 
     private Long evalutaionRoleAccess(ProceedingJoinPoint joinPoint, CheckRoleAccess checkRoleAccess) {
-        Object param = joinPoint.getArgs()[0]; // args[0] yerine parametre dizinini annotation ile verebilirsin
+        Object param = joinPoint.getArgs()[0];
         if (param instanceof Long) {
-            return (Long) param; // Eğer Long ise direkt al
+            return (Long) param;
         }
-        // DTO ise SpEL ile property oku
+
         SpelExpressionParser parser = new SpelExpressionParser();
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("arg", param);

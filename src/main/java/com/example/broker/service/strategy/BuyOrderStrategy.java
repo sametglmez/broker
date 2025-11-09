@@ -26,19 +26,16 @@ public class BuyOrderStrategy implements OrderStrategy {
     @Override
     @Transactional
     public void createOrder(OrderDto orderDto, Customer customer) {
-        // get TRY asset for customer
         Asset tryAsset = assetRepository.findByCustomerAndAssetName(customer, "TRY")
                 .orElseThrow(() -> new CustomException(ErrorType.ASSET_NOT_FOUND,
                         "TRY asset not found for customer: " + customer.getId()));
 
         BigDecimal totalCost = orderDto.getPrice().multiply(orderDto.getSize()); // price * size
-        // Kullanılabilir bakiye kontrolü
         if (tryAsset.getUsableSize().compareTo(totalCost) < 0) {
             throw new CustomException(ErrorType.INSUFFICIENT_FUNDS,
                     "TRY usable balance is insufficient. required: " + totalCost + " available: " + tryAsset.getUsableSize());
         }
 
-        // Bloke et: usableSize -= totalCost
         BigDecimal newTryUsable = tryAsset.getUsableSize().subtract(totalCost);
         tryAsset.setUsableSize(newTryUsable);
         assetRepository.save(tryAsset);
@@ -48,7 +45,6 @@ public class BuyOrderStrategy implements OrderStrategy {
     @Override
     @Transactional
     public void cancelOrder(Order order, Customer customer) {
-        // BUY: TRY usableSize geri verilir (price * size)
         Asset affectedAsset = assetRepository.findByCustomerAndAssetName(customer, "TRY")
                 .orElseThrow(() -> new CustomException(ErrorType.ASSET_NOT_FOUND,
                         "TRY asset not found for customer: " + customer.getId()));
@@ -67,17 +63,14 @@ public class BuyOrderStrategy implements OrderStrategy {
 
         BigDecimal totalCost = order.getPrice().multiply(order.getSize());
 
-        // Bakiye yeterliliği kontrolü
         if (tryAsset.getSize().compareTo(totalCost) < 0) {
             throw new CustomException(ErrorType.INSUFFICIENT_FUNDS,
                     "Insufficient TRY balance for matching. Required: " + totalCost + ", Available: " + tryAsset.getSize());
         }
 
-        // TRY düşülür
         tryAsset.setSize(tryAsset.getSize().subtract(totalCost));
         tryAsset.setUsableSize(tryAsset.getUsableSize().subtract(totalCost));
 
-        // Alınan varlık (örneğin BTC) bulunur veya oluşturulur
         Asset boughtAsset = assetRepository.findByCustomerAndAssetName(customer, order.getAssetName())
                 .orElseGet(() -> Asset.builder()
                         .customer(customer)

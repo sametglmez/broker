@@ -24,7 +24,6 @@ public class SellOrderStrategy implements OrderStrategy {
     @Override
     public void createOrder(OrderDto orderDto, Customer customer) {
 
-        // get asset to sell
         Asset assetToSell = assetRepository.findByCustomerAndAssetName(customer, orderDto.getAssetName())
                 .orElseThrow(() -> new CustomException(ErrorType.ASSET_NOT_FOUND,
                         "Asset " + orderDto.getAssetName() + " not found for customer: " + customer.getId()));
@@ -34,7 +33,6 @@ public class SellOrderStrategy implements OrderStrategy {
                     "Asset usable balance is insufficient. required: " + orderDto.getSize() + " available: " + assetToSell.getUsableSize());
         }
 
-        // Bloke et: usableSize -= size
         BigDecimal newUsable = assetToSell.getUsableSize().subtract(orderDto.getSize());
         assetToSell.setUsableSize(newUsable);
         assetRepository.save(assetToSell);
@@ -44,7 +42,6 @@ public class SellOrderStrategy implements OrderStrategy {
     @Override
     public void cancelOrder(Order order, Customer customer) {
 
-        // SELL: satılacak hisse usableSize geri verilir (size)
         Asset affectedAsset = assetRepository.findByCustomerAndAssetName(customer, order.getAssetName())
                 .orElseThrow(() -> new CustomException(ErrorType.ASSET_NOT_FOUND,
                         "Asset " + order.getAssetName() + " not found for customer: " + customer.getId()));
@@ -63,7 +60,6 @@ public class SellOrderStrategy implements OrderStrategy {
 
         BigDecimal totalValue = order.getPrice().multiply(order.getSize());
 
-        //Satılacak varlık miktarı kontrolü
         if (assetToSell.getSize().compareTo(order.getSize()) < 0) {
             throw new CustomException(ErrorType.INSUFFICIENT_ASSET,
                     "Insufficient asset balance for matching. Required: " + order.getSize() + ", Available: " + assetToSell.getSize());
@@ -72,7 +68,6 @@ public class SellOrderStrategy implements OrderStrategy {
         assetToSell.setSize(assetToSell.getSize().subtract(order.getSize()));
         assetToSell.setUsableSize(assetToSell.getUsableSize().subtract(order.getSize()));
 
-        // TRY asset'i bul
         Asset tryAsset = assetRepository.findByCustomerAndAssetName(customer, "TRY")
                 .orElseThrow(() -> new CustomException(ErrorType.ASSET_NOT_FOUND,
                         "TRY asset not found for customer: " + customer.getId()));

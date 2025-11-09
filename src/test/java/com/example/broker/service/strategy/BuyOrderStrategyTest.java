@@ -37,7 +37,7 @@ class BuyOrderStrategyTest {
     void createOrder_shouldBlockUsableTRY_whenBalanceSufficient() {
         OrderDto orderDto = new OrderDto();
         orderDto.setAssetName("BTC");
-        orderDto.setOrderSide(null); // Strategy branch zaten BUY
+        orderDto.setOrderSide(null);
         orderDto.setSize(BigDecimal.valueOf(2));
         orderDto.setPrice(BigDecimal.valueOf(100));
 
@@ -100,7 +100,6 @@ class BuyOrderStrategyTest {
         orderDto.setSize(BigDecimal.valueOf(200));
         orderDto.setPrice(BigDecimal.valueOf(1));
 
-        // Mock Order nesnesi
         var order = org.mockito.Mockito.mock(com.example.broker.entity.Order.class);
         when(order.getPrice()).thenReturn(BigDecimal.valueOf(1));
         when(order.getSize()).thenReturn(BigDecimal.valueOf(200));

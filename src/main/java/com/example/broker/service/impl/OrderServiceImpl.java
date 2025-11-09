@@ -44,8 +44,6 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new CustomException(ErrorType.CUSTOMER_NOT_FOUND,
                         "Customer not found with id: " + orderDto.getCustomerId()));
 
-        // 2) Kurallar: BUY => TRY usableSize >= price * size
-        //             SELL => ilgili asset usableSize >= size
         OrderSide side = orderDto.getOrderSide();
         BigDecimal size = orderDto.getSize();
         BigDecimal price = orderDto.getPrice();
@@ -81,18 +79,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelOrder(Long orderId) {
-        // TODO : Customer_id yi de al
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorType.ORDER_NOT_FOUND,
                         "Order not found with id: " + orderId));
 
-        // 2) Yalnızca PENDING iptal edilebilir
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new CustomException(ErrorType.ORDER_NOT_PENDING,
                     "Order is not in PENDING status: current=" + order.getStatus());
         }
 
-        // 3) İlgili müşteri ve asset bulunur
         Customer customer = order.getCustomer();
         if (customer == null) {
             throw new CustomException(ErrorType.CUSTOMER_NOT_FOUND,
@@ -102,7 +97,6 @@ public class OrderServiceImpl implements OrderService {
         OrderStrategy strategy = orderStrategies.get(order.getOrderSide().name());
         strategy.cancelOrder(order, customer);
 
-        // 5) Order status -> CANCELED
         order.setStatus(OrderStatus.CANCELED);
         orderRepository.save(order);
 

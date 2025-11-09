@@ -2,6 +2,7 @@ package com.example.broker.service;
 
 
 import com.example.broker.security.SensitiveData;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -23,6 +24,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.stream.StreamSupport;
 
 @Aspect
 @Component
@@ -36,32 +38,63 @@ public class GlobalLoggingAspect {
     public Object logRequestResponse(ProceedingJoinPoint joinPoint) throws Throwable {
 
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = signature.getDeclaringType().getSimpleName();
-        String methodName = signature.getName();
         Object[] args = joinPoint.getArgs();
 
-        log.info(">>> REQUEST -> {}.{}() | Parameters: {}", className, methodName, Arrays.toString(args));
+        Object[] maskedArgs = Arrays.stream(args)
+                .map(this::maskSensitiveData)
+                .toArray();
 
-        long startTime = System.currentTimeMillis();
+        log.info(">>> REQUEST -> {}.{}() | Parameters: {}",
+                joinPoint.getSignature().getDeclaringType().getSimpleName(),
+                joinPoint.getSignature().getName(),
+                Arrays.toString(maskedArgs));
+
+        Object result = joinPoint.proceed();
+
+        Object maskedResult = maskSensitiveData(result);
+
+        log.info("<<< RESPONSE <- {}.{}() | Returned: {}",
+                joinPoint.getSignature().getDeclaringType().getSimpleName(),
+                joinPoint.getSignature().getName(),
+                maskedResult);
+
+        return result;
+    }
+
+    private Object maskSensitiveData(Object obj) {
+        if (obj == null) return null;
+
+        if (obj instanceof Iterable<?> iterable) {
+            return StreamSupport.stream(iterable.spliterator(), false)
+                    .map(this::maskSensitiveData)
+                    .collect(Collectors.toList());
+        }
+
+        if (obj.getClass().isArray()) {
+            return Arrays.stream((Object[]) obj)
+                    .map(this::maskSensitiveData)
+                    .toArray();
+        }
 
         try {
-            Object result = joinPoint.proceed();
-            long duration = System.currentTimeMillis() - startTime;
+            Object copy = obj.getClass().getDeclaredConstructor().newInstance();
+            Field[] fields = obj.getClass().getDeclaredFields();
 
-            // Response logu
-            log.info("<<< RESPONSE <- {}.{}() | Returned: {} | Execution time: {} ms",
-                    className, methodName, result, duration);
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(obj);
 
-            return result;
+                if (field.isAnnotationPresent(SensitiveData.class)) {
+                    field.set(copy, "***MASKED***");
+                } else {
+                    field.set(copy, value);
+                }
+            }
 
-        } catch (Exception ex) {
-            long duration = System.currentTimeMillis() - startTime;
+            return copy;
 
-            log.error("XXX EXCEPTION in {}.{}() | Execution time: {} ms | Exception: {}",
-                    className, methodName, duration, ex.getMessage(), ex);
-
-            throw ex;
+        } catch (Exception e) {
+            return obj;
         }
     }
 }

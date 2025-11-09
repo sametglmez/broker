@@ -71,7 +71,6 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(username, claims);
-        // Token expiration
         Date expiresAt = jwtService.getExpirationFromToken(token);
         return new LoginResponse(token, user.getUsername(), user.getRole().getName(), expiresAt);
 
